@@ -157,7 +157,8 @@ class LLM_MCP_server:
              
             with open('tool_call_hist.json', 'w') as file:
                     json.dump([], file)
-        
+
+        # read previous version of tool history
         with open('tool_call_hist.json', 'r') as file:
                 tool_hist_dct_old = json.load(file)
         

@@ -1,0 +1,14 @@
+[project]
+name = "lseg-llm-mcp"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "dash[async]>=3.2.0",
+    "dash-chat>=0.3.0",
+    "fastmcp>=2.12.5",
+    "openai>=2.6.0",
+    "pandas>=2.3.3",
+    "pypdf>=6.1.3",
+]

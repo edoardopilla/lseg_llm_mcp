@@ -11,8 +11,8 @@ LLM_client = LLM_MCP_server()
               State("chat-component", "messages"),
               prevent_initial_call=True)
 
-async def handle_chat(new_message,
-                      messages):
+async def handle_chat(new_message: str,
+                      messages: List[str]) -> List[str]:
     """
     Enable conversational flow between user and LLM.
 

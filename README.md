@@ -1,7 +1,7 @@
 # LSEG MCP Server Interface
 
 ## 🧩 Introduction
-This project exposes **LSEG API endpoints** as tools for an **MCP (Multi-Component Platform) server**, enabling users to query data related to **financial statements**, **earnings calls**, and other **corporate information** for companies covered by **LSEG**.  
+This project exposes **LSEG API endpoints** as tools for an **MCP (Model Context Protocol) server**, enabling users to query data related to **financial statements**, **earnings calls**, and other **corporate information** for companies covered by **LSEG**.  
 
 Interaction with the MCP server occurs through a **simple web frontend**, where users can type a question and receive responses directly.
 
@@ -13,10 +13,10 @@ Interaction with the MCP server occurs through a **simple web frontend**, where 
 
 ### 2. Create a .env file in the project root with the following content (replace placeholders with your credentials and API keys):
 
-LSEG_USERNAME='ENTER_LSEG_USERNAME'
-LSEG_PASSWORD='ENTER_LSEG_PASSWORD'
-LSEG_EDP_APP_KEY='ENTER_LSEG_EDP_APP_KEY'
-OPENAI_API_KEY='ENTER_OPENAI_API_KEY'
+LSEG_USERNAME='ENTER_LSEG_USERNAME'  
+LSEG_PASSWORD='ENTER_LSEG_PASSWORD'  
+LSEG_EDP_APP_KEY='ENTER_LSEG_EDP_APP_KEY'  
+OPENAI_API_KEY='ENTER_OPENAI_API_KEY'  
 
 ### 3. Install dependencies through uv sync
 

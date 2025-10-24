@@ -22,6 +22,8 @@ OPENAI_API_KEY='ENTER_OPENAI_API_KEY'
 
 ### 4. Activate virtual environment through .venv\Scripts\activate
 
+---
+
 ## 🚀 Running the frontend
 
 ### 1. Execute the frontend script through python app.py (default location localhost:8050)

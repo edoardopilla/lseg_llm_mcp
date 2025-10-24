@@ -3,7 +3,7 @@ from LLM_MCP import *
 from dash import Output, Input, State
 
 # initialize llm instance
-LLM_client = LLM_MCP_server()
+LLM_client = LLM_MCP_obj()
 
 # define callback to process user query in conversational flow
 @app.callback(Output("chat-component", "messages"),

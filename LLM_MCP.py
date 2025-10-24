@@ -10,7 +10,7 @@ import json
 import os
 import pandas as pd
 
-class LLM_MCP_server:
+class LLM_MCP_obj:
     """
     Class to establish LLM and MCP functionalities.
     """
@@ -89,7 +89,7 @@ class LLM_MCP_server:
         print('\nConnected to server with tools:')
 
         for tool in tools_result.tools:
-            print(f' - {tool.name}: {tool.description}')
+            print(f'- {tool.name}')
 
         # attribute session to self, allows to list tool in subsequent method
         self.session=session
@@ -125,12 +125,6 @@ class LLM_MCP_server:
 
         # get available tools
         tools = await self.get_mcp_tools()
-
-        # read OAPermID map
-        #content = await self.session.read_resource("data://oapermids")
-
-        # extract string storing file content
-        #comp_oapermids = content.contents[0].text
 
         # initial openai api call
         response = await self.client.chat.completions.create(model=self.model,
@@ -206,13 +200,6 @@ class LLM_MCP_server:
                 messages.append({'role': 'tool',
                                  'tool_call_id': tool_call.id,
                                  'content': result.content[0].text})
-                
-                # tool_hist_dct = {query: [pd.to_datetime('now').strftime('%Y-%m-%dT%H:%M:%S'),
-                #                          tool_call.function.name,
-                #                          tool_call.function.arguments,
-                #                          result.content[0].text]}
-
-            # tool_hist_dct_merge = {k: [d[k] for d in tool_hist_dct_lst] for k in tool_hist_dct_lst[0]}
 
             messages.append({'role': 'system',
                              'content': self.system_message})
@@ -225,16 +212,13 @@ class LLM_MCP_server:
                                                                        temperature=self.temper,
                                                                        tools=tools,
                                                                        tool_choice='none',
-                                                                       top_p=self.top_p)  # don't allow more tool calls
+                                                                       top_p=self.top_p)
             
             for i in range(len(tool_hist_dct_lst)):
                 tool_hist_dct_lst[i].update({'question_tkns': response.usage.prompt_tokens + final_response.usage.prompt_tokens,
                                              'answer': final_response.choices[0].message.content.strip(),
                                              'answer_tkns': response.usage.completion_tokens + final_response.usage.completion_tokens,
                                              'tot_tkns': response.usage.total_tokens + final_response.usage.total_tokens})
-                
-            # for i in range(len(tool_hist_dct_merge[query])):
-            #     tool_hist_dct_merge[query][i].append(final_response.choices[0].message.content.strip())
 
             tool_hist_dct_new = tool_hist_dct_old.copy()
 

@@ -191,6 +191,152 @@ def get_cashflow_statement(comp_name: str,
     return cashflow_str
 
 @mcp.tool()
+def get_company_business_info(comp_name: str) -> str:
+    """
+    Gets business information for a given company, including industry sector and NAICS codes.
+
+    Args:
+        comp_name: The name of the company whose business information must be retrieved.
+
+    Returns:
+        The business information of the company.
+    """
+
+    # look up the company's OAPermID
+    comp_oapermid = get_comp_oapermid(comp_name)
+
+    time.sleep(1)
+
+    url = f'https://api.refinitiv.com/user-framework/mobile/overview-service/v1/corp/business-classification/{comp_oapermid}'
+
+    headers = {'Content-Type': 'application/json',
+               'Authorization': f'Bearer {os.getenv('LSEG_ACCESS_TOKEN')}'}
+
+    response = requests.get(url=url,
+                            headers=headers)
+
+    business_info_str = json.dumps(response.json()['data'])
+
+    return business_info_str
+
+@mcp.tool()
+def get_company_business_summary(comp_name: str) -> str:
+    """
+    Gets the business summary for a given company.
+
+    Args:
+        comp_name: The name of the company whose business summary must be retrieved.
+
+    Retunrs:
+        The business summary of the company, along with incorporation information such as incorporation date and country.
+    """
+
+    # look up the company's primary RIC
+    primary_ric = get_company_primaryric(comp_name)
+
+    time.sleep(1)
+
+    url = f'https://api.refinitiv.com/user-framework/mobile/overview-service/v1//corp/business-summary/{primary_ric}'
+
+    headers = {'Content-Type': 'application/json',
+               'Authorization': f'Bearer {os.getenv('LSEG_ACCESS_TOKEN')}'}
+
+    response = requests.get(url=url,
+                            headers=headers)
+
+    business_summary_str = json.dumps(response.json()['data'])
+
+    return business_summary_str
+
+@mcp.tool()
+def get_company_capital_structure(comp_name: str) -> str:
+    """
+    Gets the capital structure for a given company.
+
+    Args:
+        comp_name: The name of the company whose capital structure must be retrieved.
+
+    Returns:
+        Information on the capital structure of the company.
+    """
+
+    # look up the company's primary RIC
+    primary_ric = get_company_primaryric(comp_name)
+
+    time.sleep(1)
+
+    url = f'https://api.refinitiv.com/user-framework/mobile/overview-service/v1//corp/capital-structure/{primary_ric}'
+
+    headers = {'Content-Type': 'application/json',
+               'Accept-Language': 'en-US',
+               'Authorization': f'Bearer {os.getenv('LSEG_ACCESS_TOKEN')}'}
+
+    response = requests.get(url=url,
+                            headers=headers)
+
+    capital_structure_str = json.dumps(response.json()['data'])
+
+    return capital_structure_str
+
+@mcp.tool()
+def get_company_officers_directors(comp_name: str) -> str:
+    """
+    Gets the list of officers and directors for a given company.
+
+    Args:
+        comp_name: The name of the company whose officers and directors must be retrieved.
+
+    Returns:
+        The list of officers and directors of the company.
+    """
+
+    # look up the company's primary RIC
+    primary_ric = get_company_primaryric(comp_name)
+
+    time.sleep(1)
+
+    url = f'https://api.refinitiv.com/user-framework/mobile/overview-service/v1/corp/officer-and-directors-public/{primary_ric}'
+
+    headers = {'Content-Type': 'application/json',
+               'Authorization': f'Bearer {os.getenv('LSEG_ACCESS_TOKEN')}'}
+
+    response = requests.get(url=url,
+                            headers=headers)
+
+    officers_directors_str = json.dumps(response.json()['data']['officersAndDirectorsPublic'])
+
+    return officers_directors_str
+
+@mcp.tool()
+def get_company_ownership(comp_name: str) -> str:
+    """
+    Gets the ownership information for a given company.
+
+    Args:
+        comp_name: The name of the company whose ownership information must be retrieved.
+
+    Returns:
+        The ownership information of the company.
+    """
+
+    # look up the company's primary RIC
+    primary_ric = get_company_primaryric(comp_name)
+
+    time.sleep(1)
+
+    url = f'https://api.refinitiv.com/user-framework/mobile/overview-service/v1/corp/ownership/{primary_ric}'
+
+    headers = {'Content-Type': 'application/json',
+               'Authorization': f'Bearer {os.getenv('LSEG_ACCESS_TOKEN')}'}
+
+    response = requests.get(url=url,
+                            headers=headers)
+
+    ownership_str = json.dumps(response.json()['data'])
+
+    return ownership_str
+
+@mcp.tool()
 def get_earningscall_transcript(comp_name: str,
                                 period: str = f'{pd.to_datetime('now').strftime('%Y-%m-%d')}') -> str:
     """

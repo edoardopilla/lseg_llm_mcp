@@ -26,7 +26,7 @@ class LLM_MCP_obj:
                  seed=17,
                  session=None,
                  stdio=None,
-                 system_message="You are a helpful assistant.",
+                 system_message="You are a helpful assistant. If a question implies a comparison between different periods, but the periods are not explicitly stated in the question, always execute the tool calls for the preceding period in addition to the one that is explicitly stated. Use the resulting data to provide the comparison. Such an example may be: 'Does Adobe have an improving operating margin profile as of FY2022?' where the word 'improving' should lead you to also execute tool calls for FY2021.",
                  temper=.01,
                  top_p=.15,
                  write=None):
@@ -128,7 +128,9 @@ class LLM_MCP_obj:
 
         # initial openai api call
         response = await self.client.chat.completions.create(model=self.model,
-                                                             messages=[{'role': 'user',
+                                                             messages=[{'role': 'system',
+                                                                        'content': self.system_message},
+                                                                       {'role': 'user',
                                                                         'content': query}],
                                                              seed=self.seed,
                                                              temperature=self.temper,
@@ -200,9 +202,6 @@ class LLM_MCP_obj:
                 messages.append({'role': 'tool',
                                  'tool_call_id': tool_call.id,
                                  'content': result.content[0].text})
-
-            messages.append({'role': 'system',
-                             'content': self.system_message})
 
             # get final response from OpenAI with tool results
             final_response = await self.client.chat.completions.create(model=self.model,

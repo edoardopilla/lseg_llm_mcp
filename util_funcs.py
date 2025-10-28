@@ -3,7 +3,7 @@ from auth_mgmt import *
 
 import json
 
-def get_comp_oapermid(comp_name: str) -> str:
+def get_company_oapermid(comp_name: str) -> str:
     """
     Get the OAPermID of a company given its name.
     

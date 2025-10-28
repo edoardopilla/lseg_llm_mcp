@@ -90,7 +90,7 @@ def get_balancesheet_statement(comp_name: str,
     """
     
     # look up the company's OAPermID
-    comp_oapermid = get_comp_oapermid(comp_name)
+    comp_oapermid = get_company_oapermid(comp_name)
 
     time.sleep(1)
     
@@ -156,7 +156,7 @@ def get_cashflow_statement(comp_name: str,
     """
     
     # look up the company's OAPermID
-    comp_oapermid = get_comp_oapermid(comp_name)
+    comp_oapermid = get_company_oapermid(comp_name)
 
     time.sleep(1)
     
@@ -203,7 +203,7 @@ def get_company_business_info(comp_name: str) -> str:
     """
 
     # look up the company's OAPermID
-    comp_oapermid = get_comp_oapermid(comp_name)
+    comp_oapermid = get_company_oapermid(comp_name)
 
     time.sleep(1)
 
@@ -277,6 +277,52 @@ def get_company_capital_structure(comp_name: str) -> str:
     capital_structure_str = json.dumps(response.json()['data'])
 
     return capital_structure_str
+
+@mcp.tool()
+def get_company_fiscalyear_date(comp_name: str,
+                                period: str = f'FY{str(pd.to_datetime('now').year - 1)}') -> str:
+    """
+    Gets the fiscal year end date for a given company.
+
+    Args:
+        comp_name: The name of the company whose fiscal year end date must be retrieved.
+
+        period: The financial period the user wishes to retrieve the fiscal year date for,
+                defaults to the current year minus 1, reflecting the fact that results are only reported
+                once the fiscal year ends, usually a few months after the beginning of a new
+                calendar year.
+    
+    Returns:
+        The fiscal year end date of the company.
+    """
+
+    # look up the company's OAPermID
+    comp_oapermid = get_company_oapermid(comp_name)
+
+    # sleep 1 second
+    time.sleep(1)
+
+    # set API endpoint
+    url = 'https://api.refinitiv.com/data/datagrid/beta1/'
+
+    # set request payload
+    payload = json.dumps({'universe': [comp_oapermid],
+                          'fields': ['TR.F.PeriodEndDate'],
+                          'parameters': {'Period': period}})
+
+    # set request headers
+    headers = {'Content-Type': 'application/json',
+                'Authorization': f'Bearer {os.getenv('LSEG_ACCESS_TOKEN')}'}
+
+    # send POST request
+    response = requests.post(url=url,
+                                headers=headers,
+                                data=payload)
+
+    # extract fiscal year date to string
+    fiscalyear_date_str = json.dumps(response.json()['data'][0][1])
+
+    return fiscalyear_date_str
 
 @mcp.tool()
 def get_company_officers_directors(comp_name: str) -> str:
@@ -450,7 +496,7 @@ def get_income_statement(comp_name: str,
     """
 
     # look up the company's OAPermID
-    comp_oapermid = get_comp_oapermid(comp_name)
+    comp_oapermid = get_company_oapermid(comp_name)
 
     time.sleep(1)
     

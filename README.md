@@ -9,6 +9,8 @@ Interaction with the MCP server occurs through a **simple web frontend**, where 
 
 ## ⚙️ Preliminaries
 
+### 0. Install uv following the steps available at https://docs.astral.sh/uv/getting-started/installation/
+
 ### 1. Clone the repository at https://github.com/edoardopilla/lseg_llm_mcp
 
 ### 2. Create a .env file in the project root with the following content (replace placeholders with your credentials and API keys):

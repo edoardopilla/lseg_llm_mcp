@@ -312,12 +312,12 @@ def get_company_fiscalyear_date(comp_name: str,
 
     # set request headers
     headers = {'Content-Type': 'application/json',
-                'Authorization': f'Bearer {os.getenv('LSEG_ACCESS_TOKEN')}'}
+               'Authorization': f'Bearer {os.getenv('LSEG_ACCESS_TOKEN')}'}
 
     # send POST request
     response = requests.post(url=url,
-                                headers=headers,
-                                data=payload)
+                             headers=headers,
+                             data=payload)
 
     # extract fiscal year date to string
     fiscalyear_date_str = json.dumps(response.json()['data'][0][1])
@@ -463,6 +463,55 @@ def get_earningscall_transcript(comp_name: str,
         earningscall_transcript_str = '\n\n'.join([pag.extract_text() for pag in pdf_file.pages])
 
         return earningscall_transcript_str
+
+@mcp.tool()
+def get_headlines() -> str:
+    """
+    Gets the top news headlines.
+
+    Args:
+        None.
+
+    Returns:
+        The top news headlines as a string.
+    """
+
+    # attempt bearer token generation
+    request_lseg_bearer_token()
+
+    # sleep 1 second
+    time.sleep(1)
+
+    # set most recent news URL
+    url = "https://api.refinitiv.com/user-framework/mobile/news-service/v1/news/headlines"
+
+    # set request headers
+    headers = {'Authorization': f'Bearer {os.getenv('LSEG_ACCESS_TOKEN')}'}
+
+    # set request payload (initialized even if empty to avoid validation error)
+    payload = json.dumps({})
+
+    # send post request
+    response = requests.post(url=url,
+                             headers=headers,
+                             data=payload)
+
+    # initialize empty list to collect all headlines
+    headlines_lst = []
+
+    # slice response object to get relevant information
+    for i in range(len(response.json()['data'])):
+        headline_dct = {'title': response.json()['data'][i]['title'],
+                        'createdAt': response.json()['data'][i]['createdAt'],
+                        'source': response.json()['data'][i]['source']}
+
+        # append to list
+        headlines_lst.append(headline_dct)
+
+    headlines_str = json.dumps(headlines_lst)
+
+    # return headlines as string
+    return headlines_str
 
 @mcp.tool()
 def get_income_statement(comp_name: str,

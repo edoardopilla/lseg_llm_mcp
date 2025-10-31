@@ -15,10 +15,12 @@ Interaction with the MCP server occurs through a **simple web frontend**, where 
 
 ### 2. Create a .env file in the project root with the following content (replace placeholders with your credentials and API keys):
 
+```
 LSEG_USERNAME='ENTER_LSEG_USERNAME'  
 LSEG_PASSWORD='ENTER_LSEG_PASSWORD'  
 LSEG_EDP_APP_KEY='ENTER_LSEG_EDP_APP_KEY'  
 OPENAI_API_KEY='ENTER_OPENAI_API_KEY'  
+```
 
 ### 3. Install dependencies through uv sync
 

@@ -5,6 +5,8 @@ This project exposes **LSEG API endpoints** as tools for an **MCP (Model Context
 
 Interaction with the MCP server occurs through a **simple web frontend**, where users can type a question and receive responses directly.
 
+![image info](lseg_llm_mcp_diagram_backgroun.svg)
+
 ---
 
 ## ⚙️ Preliminaries

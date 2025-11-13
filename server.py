@@ -190,197 +190,197 @@ def get_cashflow_statement(comp_name: str,
     
     return cashflow_str
 
-@mcp.tool()
-def get_company_business_info(comp_name: str) -> str:
-    """
-    Gets business information for a given company, including industry sector and NAICS codes.
+# @mcp.tool()
+# def get_company_business_info(comp_name: str) -> str:
+#     """
+#     Gets business information for a given company, including industry sector and NAICS codes.
 
-    Args:
-        comp_name: The name of the company whose business information must be retrieved.
+#     Args:
+#         comp_name: The name of the company whose business information must be retrieved.
 
-    Returns:
-        The business information of the company.
-    """
+#     Returns:
+#         The business information of the company.
+#     """
 
-    # look up the company's OAPermID
-    comp_oapermid = get_company_oapermid(comp_name)
+#     # look up the company's OAPermID
+#     comp_oapermid = get_company_oapermid(comp_name)
 
-    time.sleep(1)
+#     time.sleep(1)
 
-    url = f'https://api.refinitiv.com/user-framework/mobile/overview-service/v1/corp/business-classification/{comp_oapermid}'
+#     url = f'https://api.refinitiv.com/user-framework/mobile/overview-service/v1/corp/business-classification/{comp_oapermid}'
 
-    headers = {'Content-Type': 'application/json',
-               'Authorization': f'Bearer {os.getenv('LSEG_ACCESS_TOKEN')}'}
+#     headers = {'Content-Type': 'application/json',
+#                'Authorization': f'Bearer {os.getenv('LSEG_ACCESS_TOKEN')}'}
 
-    response = requests.get(url=url,
-                            headers=headers)
+#     response = requests.get(url=url,
+#                             headers=headers)
 
-    business_info_str = json.dumps(response.json()['data'])
+#     business_info_str = json.dumps(response.json()['data'])
 
-    return business_info_str
+#     return business_info_str
 
-@mcp.tool()
-def get_company_business_summary(comp_name: str) -> str:
-    """
-    Gets the business summary for a given company.
+# @mcp.tool()
+# def get_company_business_summary(comp_name: str) -> str:
+#     """
+#     Gets the business summary for a given company.
 
-    Args:
-        comp_name: The name of the company whose business summary must be retrieved.
+#     Args:
+#         comp_name: The name of the company whose business summary must be retrieved.
 
-    Retunrs:
-        The business summary of the company, along with incorporation information such as incorporation date and country.
-    """
+#     Retunrs:
+#         The business summary of the company, along with incorporation information such as incorporation date and country.
+#     """
 
-    # look up the company's primary RIC
-    primary_ric = get_company_primaryric(comp_name)
+#     # look up the company's primary RIC
+#     primary_ric = get_company_primaryric(comp_name)
 
-    time.sleep(1)
+#     time.sleep(1)
 
-    url = f'https://api.refinitiv.com/user-framework/mobile/overview-service/v1//corp/business-summary/{primary_ric}'
+#     url = f'https://api.refinitiv.com/user-framework/mobile/overview-service/v1//corp/business-summary/{primary_ric}'
 
-    headers = {'Content-Type': 'application/json',
-               'Authorization': f'Bearer {os.getenv('LSEG_ACCESS_TOKEN')}'}
+#     headers = {'Content-Type': 'application/json',
+#                'Authorization': f'Bearer {os.getenv('LSEG_ACCESS_TOKEN')}'}
 
-    response = requests.get(url=url,
-                            headers=headers)
+#     response = requests.get(url=url,
+#                             headers=headers)
 
-    business_summary_str = json.dumps(response.json()['data'])
+#     business_summary_str = json.dumps(response.json()['data'])
 
-    return business_summary_str
+#     return business_summary_str
 
-@mcp.tool()
-def get_company_capital_structure(comp_name: str) -> str:
-    """
-    Gets the capital structure for a given company.
+# @mcp.tool()
+# def get_company_capital_structure(comp_name: str) -> str:
+#     """
+#     Gets the capital structure for a given company.
 
-    Args:
-        comp_name: The name of the company whose capital structure must be retrieved.
+#     Args:
+#         comp_name: The name of the company whose capital structure must be retrieved.
 
-    Returns:
-        Information on the capital structure of the company.
-    """
+#     Returns:
+#         Information on the capital structure of the company.
+#     """
 
-    # look up the company's primary RIC
-    primary_ric = get_company_primaryric(comp_name)
+#     # look up the company's primary RIC
+#     primary_ric = get_company_primaryric(comp_name)
 
-    time.sleep(1)
+#     time.sleep(1)
 
-    url = f'https://api.refinitiv.com/user-framework/mobile/overview-service/v1//corp/capital-structure/{primary_ric}'
+#     url = f'https://api.refinitiv.com/user-framework/mobile/overview-service/v1//corp/capital-structure/{primary_ric}'
 
-    headers = {'Content-Type': 'application/json',
-               'Accept-Language': 'en-US',
-               'Authorization': f'Bearer {os.getenv('LSEG_ACCESS_TOKEN')}'}
+#     headers = {'Content-Type': 'application/json',
+#                'Accept-Language': 'en-US',
+#                'Authorization': f'Bearer {os.getenv('LSEG_ACCESS_TOKEN')}'}
 
-    response = requests.get(url=url,
-                            headers=headers)
+#     response = requests.get(url=url,
+#                             headers=headers)
 
-    capital_structure_str = json.dumps(response.json()['data'])
+#     capital_structure_str = json.dumps(response.json()['data'])
 
-    return capital_structure_str
+#     return capital_structure_str
 
-@mcp.tool()
-def get_company_fiscalyear_date(comp_name: str,
-                                period: str = f'FY{str(pd.to_datetime('now').year - 1)}') -> str:
-    """
-    Gets the fiscal year end date for a given company.
+# @mcp.tool()
+# def get_company_fiscalyear_date(comp_name: str,
+#                                 period: str = f'FY{str(pd.to_datetime('now').year - 1)}') -> str:
+#     """
+#     Gets the fiscal year end date for a given company.
 
-    Args:
-        comp_name: The name of the company whose fiscal year end date must be retrieved.
+#     Args:
+#         comp_name: The name of the company whose fiscal year end date must be retrieved.
 
-        period: The financial period the user wishes to retrieve the fiscal year date for,
-                defaults to the current year minus 1, reflecting the fact that results are only reported
-                once the fiscal year ends, usually a few months after the beginning of a new
-                calendar year.
+#         period: The financial period the user wishes to retrieve the fiscal year date for,
+#                 defaults to the current year minus 1, reflecting the fact that results are only reported
+#                 once the fiscal year ends, usually a few months after the beginning of a new
+#                 calendar year.
     
-    Returns:
-        The fiscal year end date of the company.
-    """
+#     Returns:
+#         The fiscal year end date of the company.
+#     """
 
-    # look up the company's OAPermID
-    comp_oapermid = get_company_oapermid(comp_name)
+#     # look up the company's OAPermID
+#     comp_oapermid = get_company_oapermid(comp_name)
 
-    # sleep 1 second
-    time.sleep(1)
+#     # sleep 1 second
+#     time.sleep(1)
 
-    # set API endpoint
-    url = 'https://api.refinitiv.com/data/datagrid/beta1/'
+#     # set API endpoint
+#     url = 'https://api.refinitiv.com/data/datagrid/beta1/'
 
-    # set request payload
-    payload = json.dumps({'universe': [comp_oapermid],
-                          'fields': ['TR.F.PeriodEndDate'],
-                          'parameters': {'Period': period}})
+#     # set request payload
+#     payload = json.dumps({'universe': [comp_oapermid],
+#                           'fields': ['TR.F.PeriodEndDate'],
+#                           'parameters': {'Period': period}})
 
-    # set request headers
-    headers = {'Content-Type': 'application/json',
-               'Authorization': f'Bearer {os.getenv('LSEG_ACCESS_TOKEN')}'}
+#     # set request headers
+#     headers = {'Content-Type': 'application/json',
+#                'Authorization': f'Bearer {os.getenv('LSEG_ACCESS_TOKEN')}'}
 
-    # send POST request
-    response = requests.post(url=url,
-                             headers=headers,
-                             data=payload)
+#     # send POST request
+#     response = requests.post(url=url,
+#                              headers=headers,
+#                              data=payload)
 
-    # extract fiscal year date to string
-    fiscalyear_date_str = json.dumps(response.json()['data'][0][1])
+#     # extract fiscal year date to string
+#     fiscalyear_date_str = json.dumps(response.json()['data'][0][1])
 
-    return fiscalyear_date_str
+#     return fiscalyear_date_str
 
-@mcp.tool()
-def get_company_officers_directors(comp_name: str) -> str:
-    """
-    Gets the list of officers and directors for a given company.
+# @mcp.tool()
+# def get_company_officers_directors(comp_name: str) -> str:
+#     """
+#     Gets the list of officers and directors for a given company.
 
-    Args:
-        comp_name: The name of the company whose officers and directors must be retrieved.
+#     Args:
+#         comp_name: The name of the company whose officers and directors must be retrieved.
 
-    Returns:
-        The list of officers and directors of the company.
-    """
+#     Returns:
+#         The list of officers and directors of the company.
+#     """
 
-    # look up the company's primary RIC
-    primary_ric = get_company_primaryric(comp_name)
+#     # look up the company's primary RIC
+#     primary_ric = get_company_primaryric(comp_name)
 
-    time.sleep(1)
+#     time.sleep(1)
 
-    url = f'https://api.refinitiv.com/user-framework/mobile/overview-service/v1/corp/officer-and-directors-public/{primary_ric}'
+#     url = f'https://api.refinitiv.com/user-framework/mobile/overview-service/v1/corp/officer-and-directors-public/{primary_ric}'
 
-    headers = {'Content-Type': 'application/json',
-               'Authorization': f'Bearer {os.getenv('LSEG_ACCESS_TOKEN')}'}
+#     headers = {'Content-Type': 'application/json',
+#                'Authorization': f'Bearer {os.getenv('LSEG_ACCESS_TOKEN')}'}
 
-    response = requests.get(url=url,
-                            headers=headers)
+#     response = requests.get(url=url,
+#                             headers=headers)
 
-    officers_directors_str = json.dumps(response.json()['data']['officersAndDirectorsPublic'])
+#     officers_directors_str = json.dumps(response.json()['data']['officersAndDirectorsPublic'])
 
-    return officers_directors_str
+#     return officers_directors_str
 
-@mcp.tool()
-def get_company_ownership(comp_name: str) -> str:
-    """
-    Gets the ownership information for a given company.
+# @mcp.tool()
+# def get_company_ownership(comp_name: str) -> str:
+#     """
+#     Gets the ownership information for a given company.
 
-    Args:
-        comp_name: The name of the company whose ownership information must be retrieved.
+#     Args:
+#         comp_name: The name of the company whose ownership information must be retrieved.
 
-    Returns:
-        The ownership information of the company.
-    """
+#     Returns:
+#         The ownership information of the company.
+#     """
 
-    # look up the company's primary RIC
-    primary_ric = get_company_primaryric(comp_name)
+#     # look up the company's primary RIC
+#     primary_ric = get_company_primaryric(comp_name)
 
-    time.sleep(1)
+#     time.sleep(1)
 
-    url = f'https://api.refinitiv.com/user-framework/mobile/overview-service/v1/corp/ownership/{primary_ric}'
+#     url = f'https://api.refinitiv.com/user-framework/mobile/overview-service/v1/corp/ownership/{primary_ric}'
 
-    headers = {'Content-Type': 'application/json',
-               'Authorization': f'Bearer {os.getenv('LSEG_ACCESS_TOKEN')}'}
+#     headers = {'Content-Type': 'application/json',
+#                'Authorization': f'Bearer {os.getenv('LSEG_ACCESS_TOKEN')}'}
 
-    response = requests.get(url=url,
-                            headers=headers)
+#     response = requests.get(url=url,
+#                             headers=headers)
 
-    ownership_str = json.dumps(response.json()['data'])
+#     ownership_str = json.dumps(response.json()['data'])
 
-    return ownership_str
+#     return ownership_str
 
 @mcp.tool()
 def get_earningscall_transcript(comp_name: str,
@@ -464,54 +464,54 @@ def get_earningscall_transcript(comp_name: str,
 
         return earningscall_transcript_str
 
-@mcp.tool()
-def get_headlines() -> str:
-    """
-    Gets the top news headlines.
+# @mcp.tool()
+# def get_headlines() -> str:
+#     """
+#     Gets the top news headlines.
 
-    Args:
-        None.
+#     Args:
+#         None.
 
-    Returns:
-        The top news headlines as a string.
-    """
+#     Returns:
+#         The top news headlines as a string.
+#     """
 
-    # attempt bearer token generation
-    request_lseg_bearer_token()
+#     # attempt bearer token generation
+#     request_lseg_bearer_token()
 
-    # sleep 1 second
-    time.sleep(1)
+#     # sleep 1 second
+#     time.sleep(1)
 
-    # set most recent news URL
-    url = "https://api.refinitiv.com/user-framework/mobile/news-service/v1/news/headlines"
+#     # set most recent news URL
+#     url = "https://api.refinitiv.com/user-framework/mobile/news-service/v1/news/headlines"
 
-    # set request headers
-    headers = {'Authorization': f'Bearer {os.getenv('LSEG_ACCESS_TOKEN')}'}
+#     # set request headers
+#     headers = {'Authorization': f'Bearer {os.getenv('LSEG_ACCESS_TOKEN')}'}
 
-    # set request payload (initialized even if empty to avoid validation error)
-    payload = json.dumps({})
+#     # set request payload (initialized even if empty to avoid validation error)
+#     payload = json.dumps({})
 
-    # send post request
-    response = requests.post(url=url,
-                             headers=headers,
-                             data=payload)
+#     # send post request
+#     response = requests.post(url=url,
+#                              headers=headers,
+#                              data=payload)
 
-    # initialize empty list to collect all headlines
-    headlines_lst = []
+#     # initialize empty list to collect all headlines
+#     headlines_lst = []
 
-    # slice response object to get relevant information
-    for i in range(len(response.json()['data'])):
-        headline_dct = {'title': response.json()['data'][i]['title'],
-                        'createdAt': response.json()['data'][i]['createdAt'],
-                        'source': response.json()['data'][i]['source']}
+#     # slice response object to get relevant information
+#     for i in range(len(response.json()['data'])):
+#         headline_dct = {'title': response.json()['data'][i]['title'],
+#                         'createdAt': response.json()['data'][i]['createdAt'],
+#                         'source': response.json()['data'][i]['source']}
 
-        # append to list
-        headlines_lst.append(headline_dct)
+#         # append to list
+#         headlines_lst.append(headline_dct)
 
-    headlines_str = json.dumps(headlines_lst)
+#     headlines_str = json.dumps(headlines_lst)
 
-    # return headlines as string
-    return headlines_str
+#     # return headlines as string
+#     return headlines_str
 
 @mcp.tool()
 def get_income_statement(comp_name: str,

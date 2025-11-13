@@ -4,11 +4,17 @@ from dotenv import load_dotenv
 from mcp import ClientSession, StdioServerParameters
 from mcp.client.stdio import stdio_client
 from openai import AsyncOpenAI
+from pydantic import BaseModel, Field
 from typing import Any, Dict, List
 
 import json
 import os
 import pandas as pd
+
+# define response format schema
+class AnswerFormat(BaseModel):
+    full_answer: str = Field(description='The full answer to output, inclusive of descriptions for the user to understand how to final answer was reached.')
+    final_answer: str = Field(description='The final figure or fact that ultimately responds to the original user question.')
 
 class LLM_MCP_obj:
     """
@@ -21,12 +27,12 @@ class LLM_MCP_obj:
     def __init__(self,
                  client=AsyncOpenAI(),
                  exit_stack=AsyncExitStack(),
-                 max_compl_tokens=512,
+                 max_compl_tokens=2048,
                  model='gpt-4o-mini',
                  seed=17,
                  session=None,
                  stdio=None,
-                 system_message="You are a helpful assistant. If a question implies a comparison between different periods, but the periods are not explicitly stated in the question, always execute the tool calls for the preceding period in addition to the one that is explicitly stated. Use the resulting data to provide the comparison. Such an example may be: 'Does Adobe have an improving operating margin profile as of FY2022?' where the word 'improving' should lead you to also execute tool calls for FY2021.",
+                 system_message="You are a helpful assistant.",
                  temper=.01,
                  top_p=.15,
                  write=None):
@@ -166,7 +172,8 @@ class LLM_MCP_obj:
                          'tool_name': None,
                          'tool_args': None,
                          'tool_resp': None,
-                         'answer': 'final_answer_placeholder',
+                         'full_answer': 'full_answer_placeholder',
+                         'final_answer': 'final_answer_placeholder',
                          'answer_tkns': None,
                          'tot_tkns': None}
 
@@ -182,7 +189,8 @@ class LLM_MCP_obj:
                          'tool_name': None,
                          'tool_args': None,
                          'tool_resp': None,
-                         'answer': 'final_answer_placeholder',
+                         'full_answer': 'full_answer_placeholder',
+                         'final_answer': 'final_answer_placeholder',
                          'answer_tkns': response.usage.completion_tokens,
                          'tot_tkns': response.usage.total_tokens}
 
@@ -202,20 +210,20 @@ class LLM_MCP_obj:
                 messages.append({'role': 'tool',
                                  'tool_call_id': tool_call.id,
                                  'content': result.content[0].text})
-
-            # get final response from OpenAI with tool results
-            final_response = await self.client.chat.completions.create(model=self.model,
+            
+            # get final response from OpenAI with tool results as context
+            final_response = await self.client.chat.completions.parse(model=self.model,
                                                                        messages=messages,
                                                                        max_completion_tokens=self.max_compl_tokens,
                                                                        seed=self.seed,
                                                                        temperature=self.temper,
-                                                                       tools=tools,
-                                                                       tool_choice='none',
-                                                                       top_p=self.top_p)
+                                                                       top_p=self.top_p,
+                                                                       response_format=AnswerFormat)
             
             for i in range(len(tool_hist_dct_lst)):
                 tool_hist_dct_lst[i].update({'question_tkns': response.usage.prompt_tokens + final_response.usage.prompt_tokens,
-                                             'answer': final_response.choices[0].message.content.strip(),
+                                             'full_answer': json.loads(final_response.choices[0].message.content)['full_answer'],
+                                             'final_answer': json.loads(final_response.choices[0].message.content)['final_answer'],
                                              'answer_tkns': response.usage.completion_tokens + final_response.usage.completion_tokens,
                                              'tot_tkns': response.usage.total_tokens + final_response.usage.total_tokens})
 
@@ -229,12 +237,15 @@ class LLM_MCP_obj:
                           f,
                           indent=1)
 
-            return {"role": "assistant", "content": final_response.choices[0].message.content.strip()}
+            print('Question processed, check the answer.')
+
+            return {"role": "assistant", "content": json.loads(final_response.choices[0].message.content)['final_answer']}
         
         tool_hist_dct_new = tool_hist_dct_old.copy()
 
         tool_hist_dct.update({'question_tkns': response.usage.prompt_tokens,
-                              'answer': response.choices[0].message.content.strip(),
+                              'full_answer': response.choices[0].message.content.strip(),
+                              'final_answer': response.choices[0].message.content.strip(),
                               'answer_tkns': response.usage.completion_tokens,
                               'tot_tkns': response.usage.total_tokens})
 
@@ -244,6 +255,8 @@ class LLM_MCP_obj:
                 json.dump(tool_hist_dct_new,
                           f,
                           indent=1)
+
+        print('Question processed, check the answer.')
 
         return {"role": "assistant", "content": assistant_message.content.strip()}
     

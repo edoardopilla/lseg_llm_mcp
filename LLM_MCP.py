@@ -3,7 +3,7 @@ from contextlib import AsyncExitStack
 from dotenv import load_dotenv
 from mcp import ClientSession, StdioServerParameters
 from mcp.client.stdio import stdio_client
-from openai import AsyncOpenAI
+from openai import AsyncOpenAI, LengthFinishReasonError
 from pydantic import BaseModel, Field
 from typing import Any, Dict, List
 
@@ -32,7 +32,7 @@ class LLM_MCP_obj:
                  seed=17,
                  session=None,
                  stdio=None,
-                 system_message="You are a helpful assistant.",
+                 system_message="You are a helpful assistant. If you receive a question without any reference to the time period or referring to the current period, always assume it refers to FY2023.",
                  temper=.01,
                  top_p=.15,
                  write=None):
@@ -211,36 +211,59 @@ class LLM_MCP_obj:
                                  'tool_call_id': tool_call.id,
                                  'content': result.content[0].text})
             
-            # get final response from OpenAI with tool results as context
-            final_response = await self.client.chat.completions.parse(model=self.model,
-                                                                       messages=messages,
-                                                                       max_completion_tokens=self.max_compl_tokens,
-                                                                       seed=self.seed,
-                                                                       temperature=self.temper,
-                                                                       top_p=self.top_p,
-                                                                       response_format=AnswerFormat)
+            try:
+                # get final response from OpenAI with tool results as context
+                final_response = await self.client.chat.completions.parse(model=self.model,
+                                                                        messages=messages,
+                                                                        max_completion_tokens=self.max_compl_tokens,
+                                                                        seed=self.seed,
+                                                                        temperature=self.temper,
+                                                                        top_p=self.top_p,
+                                                                        response_format=AnswerFormat)
             
-            for i in range(len(tool_hist_dct_lst)):
-                tool_hist_dct_lst[i].update({'question_tkns': response.usage.prompt_tokens + final_response.usage.prompt_tokens,
-                                             'full_answer': json.loads(final_response.choices[0].message.content)['full_answer'],
-                                             'final_answer': json.loads(final_response.choices[0].message.content)['final_answer'],
-                                             'answer_tkns': response.usage.completion_tokens + final_response.usage.completion_tokens,
-                                             'tot_tkns': response.usage.total_tokens + final_response.usage.total_tokens})
+                for i in range(len(tool_hist_dct_lst)):
+                    tool_hist_dct_lst[i].update({'question_tkns': response.usage.prompt_tokens + final_response.usage.prompt_tokens,
+                                                'full_answer': json.loads(final_response.choices[0].message.content)['full_answer'],
+                                                'final_answer': json.loads(final_response.choices[0].message.content)['final_answer'],
+                                                'answer_tkns': response.usage.completion_tokens + final_response.usage.completion_tokens,
+                                                'tot_tkns': response.usage.total_tokens + final_response.usage.total_tokens})
 
-            tool_hist_dct_new = tool_hist_dct_old.copy()
+                tool_hist_dct_new = tool_hist_dct_old.copy()
 
-            for dct in tool_hist_dct_lst:
-                tool_hist_dct_new.append(dct)
+                for dct in tool_hist_dct_lst:
+                    tool_hist_dct_new.append(dct)
 
-            with open('tool_call_hist.json', 'w') as f:
-                json.dump(tool_hist_dct_new,
-                          f,
-                          indent=1)
+                with open('tool_call_hist.json', 'w') as f:
+                    json.dump(tool_hist_dct_new,
+                            f,
+                            indent=1)
 
-            print('Question processed, check the answer.')
+                print('Question processed, check the answer.')
 
-            return {"role": "assistant", "content": json.loads(final_response.choices[0].message.content)['final_answer']}
-        
+                return {"role": "assistant", "content": json.loads(final_response.choices[0].message.content)['final_answer']}
+            
+            except LengthFinishReasonError:
+                for i in range(len(tool_hist_dct_lst)):
+                    tool_hist_dct_lst[i].update({'question_tkns': 0,
+                                                'full_answer': 'Structured output parsing failed',
+                                                'final_answer': 'Structured output parsing failed',
+                                                'answer_tkns': 0,
+                                                'tot_tkns': 0})
+
+                tool_hist_dct_new = tool_hist_dct_old.copy()
+
+                for dct in tool_hist_dct_lst:
+                    tool_hist_dct_new.append(dct)
+
+                with open('tool_call_hist.json', 'w') as f:
+                    json.dump(tool_hist_dct_new,
+                            f,
+                            indent=1)
+
+                print('Structured output parsing failed.')
+
+                return {"role": "assistant", "content": 'Structured output parsing failed.'}
+            
         tool_hist_dct_new = tool_hist_dct_old.copy()
 
         tool_hist_dct.update({'question_tkns': response.usage.prompt_tokens,

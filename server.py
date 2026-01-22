@@ -97,8 +97,8 @@ def get_balancesheet_statement(comp_name: str,
     url = 'https://api.refinitiv.com/data/datagrid/beta1/'
 
     payload = json.dumps({'universe': [comp_oapermid],
-                          'fields': ['TR.F.BalanceSheet.fielddescription',
-                                     'TR.F.BalanceSheet'],
+                          'fields': ['TR.F.ASRBalanceSheet.LIName',
+                                     'TR.F.ASRBalanceSheet.value'],
                           'parameters': {'Period': period,
                                          'reportingState':'Rsdt',
                                          'consolBasis': 'Consolidated',
@@ -112,17 +112,143 @@ def get_balancesheet_statement(comp_name: str,
                              headers=headers,
                              data=payload)
     
-    balancesheet_resp_lst = response.json()['data'].copy()
+    balancesheet_resp_obj = response.json().copy()
     
-    balancesheet_dct = {}
-
-    for i in range(len(balancesheet_resp_lst)):
-        balancesheet_resp_lst[i][1] = re.sub(r'\[(.*?)\]', '-', balancesheet_resp_lst[i][1])
-        balancesheet_dct.update({' - '.join(balancesheet_resp_lst[i][1].split(' - ')[0:2]): balancesheet_resp_lst[i][2]})
+    balancesheet_dct = dict(zip([balancesheet_resp_obj['data'][i][1] for i in range(len(balancesheet_resp_obj['data']))],
+                                [balancesheet_resp_obj['data'][i][2] for i in range(len(balancesheet_resp_obj['data']))]))
 
     balancesheet_str = json.dumps(balancesheet_dct)
     
     return balancesheet_str
+
+@mcp.tool()
+def get_business_segments(comp_name: str,
+                          period: str = f'FY{str(pd.to_datetime('now').year - 1)}',
+                          scale: str = '6') -> str:
+    """
+    Tool to be always executed along with get_geographic_segments and get_product_segments to obtain full context.
+    Gets the business revenue segments for the given universe.
+    Entries are reported in millions by default,
+    therefore they may require scaling if the user wishes to receive the answer in a different format.
+
+    Args:
+        comp_name: The name of the company whose business segments must be retrieved.
+
+        period: The financial period the user wishes to retrieve, defaults to the current year minus 1,
+                reflecting the fact that results are only reported once the fiscal year ends, usually
+                a few months after the beginning of a new calendar year.
+
+        scale: One of the following options for formatting the answer:
+            {'Trillions': '12',
+             'Billions': '9',
+             'Hundred Million': '8',
+             'Ten Million': '7',
+             'Millions': '6',
+             'Hundred Thousand': '5',
+             'Ten Thousand': '4',
+             'Thousands': '3',
+             'Hundreds': '2',
+             'No Scaling': '0'}
+
+    Returns:
+        The filtered business segments text.
+    """
+    
+    # look up the company's OAPermID
+    comp_oapermid = get_company_oapermid(comp_name)
+
+    time.sleep(1)
+    
+    url = 'https://api.refinitiv.com/data/datagrid/beta1/'
+
+    payload = json.dumps({'universe': [comp_oapermid],
+                          'fields': ['TR.F.ASRBusinessSegments.segmentName',
+                                     'TR.F.ASRBusinessSegments.LIName',
+                                     'TR.F.ASRBusinessSegments.value'],
+                          'parameters': {'Period': period,
+                                         'curn':'Native',
+                                         'Scale': scale}})
+    
+    headers = {'Content-Type': 'application/json',
+               'Authorization': f'Bearer {os.getenv('LSEG_ACCESS_TOKEN')}'}
+
+    response = requests.post(url=url,
+                             headers=headers,
+                             data=payload)
+    
+    business_segments_obj = response.json().copy()
+
+    business_segments_dct = dict(zip([' - '.join([business_segments_obj['data'][i][1], business_segments_obj['data'][i][2]]) for i in range(len(business_segments_obj['data']))],
+                                     [business_segments_obj['data'][i][3] for i in range(len(business_segments_obj['data']))]))
+
+    business_segments_str = json.dumps(business_segments_dct)
+
+    return business_segments_str
+
+@mcp.tool()
+def get_capital_structure(comp_name: str,
+                           period: str = f'FY{str(pd.to_datetime('now').year - 1)}',
+                           scale: str = '6') -> str:
+    """
+    Gets the capital structure for the given universe, with information on equity and debt composition.
+    For debt entries, the principal value is reported in parentheses.
+    Entries are reported in millions by default,
+    therefore they may require scaling if the user wishes to receive the answer in a different format.
+
+    Args:
+        comp_name: The name of the company whose capital structure must be retrieved.
+
+        period: The financial period the user wishes to retrieve, defaults to the current year minus 1,
+                reflecting the fact that results are only reported once the fiscal year ends, usually
+                a few months after the beginning of a new calendar year.
+
+        scale: One of the following options for formatting the answer:
+            {'Trillions': '12',
+             'Billions': '9',
+             'Hundred Million': '8',
+             'Ten Million': '7',
+             'Millions': '6',
+             'Hundred Thousand': '5',
+             'Ten Thousand': '4',
+             'Thousands': '3',
+             'Hundreds': '2',
+             'No Scaling': '0'}
+
+    Returns:
+        The filtered capital structure text.
+    """
+    
+    # look up the company's OAPermID
+    comp_oapermid = get_company_oapermid(comp_name)
+
+    time.sleep(1)
+    
+    url = 'https://api.refinitiv.com/data/datagrid/beta1/'
+
+    payload = json.dumps({'universe': [comp_oapermid],
+                          'fields': ['TR.F.ASRCST.LIName',
+                                     'TR.F.ASRCST.value'],
+                          'parameters': {'Period': period,
+                                         'reportingState':'Rsdt',
+                                         'consolBasis': 'Consolidated',
+                                         'curn':'Native',
+                                         'Scale': scale}})
+    
+    headers = {'Content-Type': 'application/json',
+               'Authorization': f'Bearer {os.getenv('LSEG_ACCESS_TOKEN')}'}
+
+    response = requests.post(url=url,
+                             headers=headers,
+                             data=payload)
+    
+    capital_resp_obj = response.json().copy()
+    
+    capital_dct = dict(zip([capital_resp_obj['data'][i][1] for i in range(len(capital_resp_obj['data']))],
+                            [capital_resp_obj['data'][i][2] for i in range(len(capital_resp_obj['data']))]))
+
+    capital_str = json.dumps(capital_dct)
+    
+    return capital_str
 
 @mcp.tool()
 def get_cashflow_statement(comp_name: str,
@@ -163,8 +289,8 @@ def get_cashflow_statement(comp_name: str,
     url = 'https://api.refinitiv.com/data/datagrid/beta1/'
 
     payload = json.dumps({'universe': [comp_oapermid],
-                          'fields': ['TR.F.CashFlowStatement.fielddescription',
-                                     'TR.F.CashFlowStatement'],
+                          'fields': ['TR.F.ASRCashFlowStatement.LIName',
+                                     'TR.F.ASRCashFlowStatement.value'],
                           'parameters': {'Period': period,
                                          'reportingState':'Rsdt',
                                          'consolBasis': 'Consolidated',
@@ -178,13 +304,10 @@ def get_cashflow_statement(comp_name: str,
                              headers=headers,
                              data=payload)
     
-    cashflow_resp_lst = response.json()['data'].copy()
+    cashflow_resp_obj = response.json().copy()
     
-    cashflow_dct = {}
-
-    for i in range(len(cashflow_resp_lst)):
-        cashflow_resp_lst[i][1] = re.sub(r'\[(.*?)\]', '-', cashflow_resp_lst[i][1])
-        cashflow_dct.update({' - '.join(cashflow_resp_lst[i][1].split(' - ')[0:2]): cashflow_resp_lst[i][2]})
+    cashflow_dct = dict(zip([cashflow_resp_obj['data'][i][1] for i in range(len(cashflow_resp_obj['data']))],
+                            [cashflow_resp_obj['data'][i][2] for i in range(len(cashflow_resp_obj['data']))]))
 
     cashflow_str = json.dumps(cashflow_dct)
     
@@ -514,6 +637,70 @@ def get_earningscall_transcript(comp_name: str,
 #     return headlines_str
 
 @mcp.tool()
+def get_geographic_segments(comp_name: str,
+                          period: str = f'FY{str(pd.to_datetime('now').year - 1)}',
+                          scale: str = '6') -> str:
+    """
+    Tool to be always executed along with get_business_segments and get_product_segments to obtain full context.
+    Gets the geographic revenue segments for the given universe.
+    Entries are reported in millions by default,
+    therefore they may require scaling if the user wishes to receive the answer in a different format.
+
+    Args:
+        comp_name: The name of the company whose geographic segments must be retrieved.
+
+        period: The financial period the user wishes to retrieve, defaults to the current year minus 1,
+                reflecting the fact that results are only reported once the fiscal year ends, usually
+                a few months after the beginning of a new calendar year.
+
+        scale: One of the following options for formatting the answer:
+            {'Trillions': '12',
+             'Billions': '9',
+             'Hundred Million': '8',
+             'Ten Million': '7',
+             'Millions': '6',
+             'Hundred Thousand': '5',
+             'Ten Thousand': '4',
+             'Thousands': '3',
+             'Hundreds': '2',
+             'No Scaling': '0'}
+
+    Returns:
+        The filtered geographic segments text.
+    """
+    
+    # look up the company's OAPermID
+    comp_oapermid = get_company_oapermid(comp_name)
+
+    time.sleep(1)
+    
+    url = 'https://api.refinitiv.com/data/datagrid/beta1/'
+
+    payload = json.dumps({'universe': [comp_oapermid],
+                          'fields': ['TR.F.ASRGeographicSegments.segmentName',
+                                     'TR.F.ASRGeographicSegments.LIName',
+                                     'TR.F.ASRGeographicSegments.value'],
+                          'parameters': {'Period': period,
+                                         'curn':'Native',
+                                         'Scale': scale}})
+    
+    headers = {'Content-Type': 'application/json',
+               'Authorization': f'Bearer {os.getenv('LSEG_ACCESS_TOKEN')}'}
+
+    response = requests.post(url=url,
+                             headers=headers,
+                             data=payload)
+    
+    geographic_segments_obj = response.json().copy()
+
+    geographic_segments_dct = dict(zip([' - '.join([geographic_segments_obj['data'][i][1], geographic_segments_obj['data'][i][2]]) for i in range(len(geographic_segments_obj['data']))],
+                                     [geographic_segments_obj['data'][i][3] for i in range(len(geographic_segments_obj['data']))]))
+
+    geographic_segments_str = json.dumps(geographic_segments_dct)
+    
+    return geographic_segments_str
+
+@mcp.tool()
 def get_income_statement(comp_name: str,
                          period: str = f'FY{str(pd.to_datetime('now').year - 1)}',
                          scale: str = '6') -> str:
@@ -552,8 +739,8 @@ def get_income_statement(comp_name: str,
     url = 'https://api.refinitiv.com/data/datagrid/beta1/'
 
     payload = json.dumps({'universe': [comp_oapermid],
-                          'fields': ['TR.F.IncomeStatement.fielddescription',
-                                     'TR.F.IncomeStatement'],
+                          'fields': ['TR.F.ASRIncomeStatement.LIName',
+                                     'TR.F.ASRIncomeStatement.value'],
                           'parameters': {'Period': period,
                                          'reportingState':'Rsdt',
                                          'consolBasis': 'Consolidated',
@@ -567,17 +754,208 @@ def get_income_statement(comp_name: str,
                              headers=headers,
                              data=payload)
     
-    income_resp_lst = response.json()['data'].copy()
+    income_resp_obj = response.json().copy()
     
-    income_dct = {}
-
-    for i in range(len(income_resp_lst)):
-        income_resp_lst[i][1] = re.sub(r'\[(.*?)\]', '-', income_resp_lst[i][1])
-        income_dct.update({' - '.join(income_resp_lst[i][1].split(' - ')[0:2]): income_resp_lst[i][2]})
+    income_dct = dict(zip([income_resp_obj['data'][i][1] for i in range(len(income_resp_obj['data']))],
+                          [income_resp_obj['data'][i][2] for i in range(len(income_resp_obj['data']))]))
 
     income_str = json.dumps(income_dct)
     
     return income_str
+
+@mcp.tool()
+def get_operating_metrics(comp_name: str,
+                         period: str = f'FY{str(pd.to_datetime('now').year - 1)}',
+                         scale: str = '6') -> str:
+    """
+    Do not execute this tool when aiming at computing ratios such as operating margin.
+    Rely on financial statement-related tools instead.
+    Gets the operating metrics for the given universe. Monetary entries are reported in millions by default,
+    therefore they may require scaling if the user wishes to receive the answer in a different format.
+    Physical measures depend on the relevant variable, and can be inferred by its label (e.g. 'Selling Space' in square meters, 'Number of Stores' in units of stores).
+
+    Args:
+        comp_name: The name of the company whose operating metrics must be retrieved.
+
+        period: The financial period the user wishes to retrieve, defaults to the current year minus 1,
+                reflecting the fact that results are only reported once the fiscal year ends, usually
+                a few months after the beginning of a new calendar year.
+
+        scale: One of the following options for formatting the answer:
+            {'Trillions': '12',
+             'Billions': '9',
+             'Hundred Million': '8',
+             'Ten Million': '7',
+             'Millions': '6',
+             'Hundred Thousand': '5',
+             'Ten Thousand': '4',
+             'Thousands': '3',
+             'Hundreds': '2',
+             'No Scaling': '0'}
+
+    Returns:
+        The filtered operating metrics text.
+    """
+
+    # look up the company's OAPermID
+    comp_oapermid = get_company_oapermid(comp_name)
+
+    time.sleep(1)
+    
+    url = 'https://api.refinitiv.com/data/datagrid/beta1/'
+
+    payload = json.dumps({'universe': [comp_oapermid],
+                          'fields': ['TR.F.ASROperatingMetrics.LIName',
+                                     'TR.F.ASROperatingMetrics.value'],
+                          'parameters': {'Period': period,
+                                         'reportingState':'Rsdt',
+                                         'consolBasis': 'Consolidated',
+                                         'curn':'Native',
+                                         'Scale': scale}})
+    
+    headers = {'Content-Type': 'application/json',
+               'Authorization': f'Bearer {os.getenv('LSEG_ACCESS_TOKEN')}'}
+
+    response = requests.post(url=url,
+                             headers=headers,
+                             data=payload)
+    
+    operating_resp_obj = response.json().copy()
+    
+    operating_dct = dict(zip([operating_resp_obj['data'][i][1] for i in range(len(operating_resp_obj['data']))],
+                          [operating_resp_obj['data'][i][2] for i in range(len(operating_resp_obj['data']))]))
+
+    operating_str = json.dumps(operating_dct)
+    
+    return operating_str
+
+@mcp.tool()
+def get_pension_plan(comp_name: str,
+                           period: str = f'FY{str(pd.to_datetime('now').year - 1)}',
+                           scale: str = '6') -> str:
+    """
+    Gets the pension plan for the given universe. Entries are reported in millions by default,
+    therefore they may require scaling if the user wishes to receive the answer in a different format.
+
+    Args:
+        comp_name: The name of the company whose pension plan must be retrieved.
+
+        period: The financial period the user wishes to retrieve, defaults to the current year minus 1,
+                reflecting the fact that results are only reported once the fiscal year ends, usually
+                a few months after the beginning of a new calendar year.
+
+        scale: One of the following options for formatting the answer:
+            {'Trillions': '12',
+             'Billions': '9',
+             'Hundred Million': '8',
+             'Ten Million': '7',
+             'Millions': '6',
+             'Hundred Thousand': '5',
+             'Ten Thousand': '4',
+             'Thousands': '3',
+             'Hundreds': '2',
+             'No Scaling': '0'}
+
+    Returns:
+        The filtered pension plan text.
+    """
+    
+    # look up the company's OAPermID
+    comp_oapermid = get_company_oapermid(comp_name)
+
+    time.sleep(1)
+    
+    url = 'https://api.refinitiv.com/data/datagrid/beta1/'
+
+    payload = json.dumps({'universe': [comp_oapermid],
+                          'fields': ['TR.F.ASRPension.LIName',
+                                     'TR.F.ASRPension.value'],
+                          'parameters': {'Period': period,
+                                         'reportingState':'Rsdt',
+                                         'consolBasis': 'Consolidated',
+                                         'curn':'Native',
+                                         'Scale': scale}})
+    
+    headers = {'Content-Type': 'application/json',
+               'Authorization': f'Bearer {os.getenv('LSEG_ACCESS_TOKEN')}'}
+
+    response = requests.post(url=url,
+                             headers=headers,
+                             data=payload)
+    
+    pension_resp_obj = response.json().copy()
+    
+    pension_dct = dict(zip([pension_resp_obj['data'][i][1] for i in range(len(pension_resp_obj['data']))],
+                            [pension_resp_obj['data'][i][2] for i in range(len(pension_resp_obj['data']))]))
+
+    pension_str = json.dumps(pension_dct)
+    
+    return pension_str
+
+
+@mcp.tool()
+def get_product_segments(comp_name: str,
+                          period: str = f'FY{str(pd.to_datetime('now').year - 1)}',
+                          scale: str = '6') -> str:
+    """
+    Tool to be always executed along with get_business_segments and get_geographic_segments to obtain full context.
+    Gets the product revenue segments for the given universe.
+    Entries are reported in millions by default,
+    therefore they may require scaling if the user wishes to receive the answer in a different format.
+
+    Args:
+        comp_name: The name of the company whose product segments must be retrieved.
+
+        period: The financial period the user wishes to retrieve, defaults to the current year minus 1,
+                reflecting the fact that results are only reported once the fiscal year ends, usually
+                a few months after the beginning of a new calendar year.
+
+        scale: One of the following options for formatting the answer:
+            {'Trillions': '12',
+             'Billions': '9',
+             'Hundred Million': '8',
+             'Ten Million': '7',
+             'Millions': '6',
+             'Hundred Thousand': '5',
+             'Ten Thousand': '4',
+             'Thousands': '3',
+             'Hundreds': '2',
+             'No Scaling': '0'}
+
+    Returns:
+        The filtered product segments text.
+    """
+    
+    # look up the company's OAPermID
+    comp_oapermid = get_company_oapermid(comp_name)
+
+    time.sleep(1)
+    
+    url = 'https://api.refinitiv.com/data/datagrid/beta1/'
+
+    payload = json.dumps({'universe': [comp_oapermid],
+                          'fields': ['TR.F.ASRProductSegments.segmentName',
+                                     'TR.F.ASRProductSegments.LIName',
+                                     'TR.F.ASRProductSegments.value'],
+                          'parameters': {'Period': period,
+                                         'curn':'Native',
+                                         'Scale': scale}})
+    
+    headers = {'Content-Type': 'application/json',
+               'Authorization': f'Bearer {os.getenv('LSEG_ACCESS_TOKEN')}'}
+
+    response = requests.post(url=url,
+                             headers=headers,
+                             data=payload)
+    
+    product_segments_obj = response.json().copy()
+
+    product_segments_dct = dict(zip([' - '.join([product_segments_obj['data'][i][1], product_segments_obj['data'][i][2]]) for i in range(len(product_segments_obj['data']))],
+                                     [product_segments_obj['data'][i][3] for i in range(len(product_segments_obj['data']))]))
+
+    product_segments_str = json.dumps(product_segments_dct)
+    
+    return product_segments_str
 
 # Run the server
 if __name__ == '__main__':

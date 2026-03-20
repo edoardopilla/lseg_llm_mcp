@@ -32,7 +32,7 @@ class LLM_MCP_obj:
                  seed=17,
                  session=None,
                  stdio=None,
-                 system_message="You are a helpful assistant. If you receive a question without any reference to the time period or referring to the current period, always assume it refers to FY2023.",
+                 system_message="You are a helpful assistant. If you receive a question without any indication of time period, always assume it to refer to FY2023. Always limit tool executions to 5 fiscal periods prior to the reference one.",
                  temper=.01,
                  top_p=.15,
                  write=None):

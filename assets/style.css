@@ -7,3 +7,11 @@ body {
     margin-right: 5%;
     margin-left: 5%
 }
+
+.sources-disclaimer {
+    color: #003299;
+    font-size: 12px;
+    margin-top: 1%;
+    margin-bottom: 1%;
+    text-align: left
+}

@@ -4,6 +4,7 @@ from dash_chat import ChatComponent
 
 # define color palette
 colormap = {'black': '#000000',
+            'blue': "#0D45B6",
             'white': '#FFFFFF'}
 
 # define logo path
@@ -13,10 +14,10 @@ header_logo = 'assets/resized.png'
 app = Dash(__name__)
 
 # specify dashboard title
-app.title = 'LSEG APIs MCP server'
+app.title = 'Bypassing Document Ingestion - Custom LSEG MCP server'
 
 # specify style for inactive tabs
-tab_style = {'color': colormap['black'],
+tab_style = {'color': colormap['blue'],
              'backgroundColor': colormap['white'],
              'borderBottom': colormap['white'],
              'borderTop': colormap['white'],
@@ -24,7 +25,7 @@ tab_style = {'color': colormap['black'],
              'line-height': '1vh'}
 
 # specify style for active tab
-tab_selected_style = {'color': colormap['black'],
+tab_selected_style = {'color': colormap['blue'],
                       'backgroundColor': colormap['white'],
                       'borderBottom': colormap['white'],
                       'borderTop': colormap['white'],
@@ -38,28 +39,34 @@ app.layout = html.Div([html.H2(style={'display': 'flex'},
                                                   style={'display': 'block',
                                                          'margin-right': 'auto'}),
 
-                                         html.H3(children='LSEG APIs MCP server',
-                                                 style={'color': colormap['black'],
+                                         html.H3(children='Bypassing Document Ingestion - Custom LSEG MCP server',
+                                                 style={'color': colormap['blue'],
                                                         'font-size': '24px',
-                                                        'font-weight': 'normal',
+                                                        'font-weight': 'bold',
                                                         'margin-right': 'auto',
                                                         'margin-bottom': 'auto',
                                                         'text-align': 'left'})]),
 
                        # initialize tabs
                                 # define first tab
-                       dcc.Tabs([dcc.Tab(label='Chat with LSEG services',
+                       dcc.Tabs([dcc.Tab(label='Single-turn QA',
                                          selected_style=tab_selected_style,
                                          style=tab_style,
                                          
                                                                                # define tab1 title
-                                         children=[html.Div(children=[html.Div(children='Chat with LSEG data',
-                                                                               style={'color': colormap['black'],
+                                         children=[html.Div(children=[html.Div(children='Interact with LSEG data',
+                                                                               style={'color': colormap['blue'],
                                                                                       'font-size': '24px',
-                                                                                      'font-weight': 'normal',
+                                                                                      'font-weight': 'bold',
                                                                                       'margin-right': 'auto',
                                                                                       'margin-bottom': 'auto',
+                                                                                      'margin-top': '1%',
                                                                                       'text-align': 'left'}),
+
+                                                                      # define disclaimer
+                                                                      html.Div(children = [html.Label(['Disclaimer: No business relationship exists between the author and LSEG.'])],
+                                                                             
+                                                                              className='sources-disclaimer'),
 
                                                                       html.Div(style={'display': 'inline-block'},
                                                                                    
@@ -73,4 +80,4 @@ exec(open(r'callbacks.py').read())
 
 # host dashboard locally
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run(debug=False)

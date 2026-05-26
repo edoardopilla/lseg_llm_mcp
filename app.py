@@ -47,6 +47,11 @@ app.layout = html.Div([html.H2(style={'display': 'flex'},
                                                         'margin-bottom': 'auto',
                                                         'text-align': 'left'})]),
 
+                                        # define disclaimer
+                                        html.Div(children = [html.Label(['Disclaimer: No business relationship exists between the author and LSEG.'])],
+                                                
+                                                className='sources-disclaimer'),
+
                        # initialize tabs
                                 # define first tab
                        dcc.Tabs([dcc.Tab(label='Single-turn QA',
@@ -63,13 +68,40 @@ app.layout = html.Div([html.H2(style={'display': 'flex'},
                                                                                       'margin-top': '1%',
                                                                                       'text-align': 'left'}),
 
-                                                                      # define disclaimer
-                                                                      html.Div(children = [html.Label(['Disclaimer: No business relationship exists between the author and LSEG.'])],
-                                                                             
-                                                                              className='sources-disclaimer'),
+                                                                       
+
+                                                                      # define model selector
+                                                                      html.Div(
+                                                                          children=[
+                                                                              html.Label(
+                                                                                  'Generator model',
+                                                                                  style={
+                                                                                      'color': colormap['blue'],
+                                                                                      'font-weight': 'bold',
+                                                                                      'margin-bottom': '8px',
+                                                                                      'display': 'block'
+                                                                                  }
+                                                                              ),
+                                                                              dcc.Dropdown(
+                                                                                  id='generator-model-dropdown',
+                                                                                  options=[
+                                                                                      {'label': 'OpenAI GPT-4o mini', 'value': 'openai/gpt-4o-mini'},
+                                                                                      {'label': 'Gemini 2.5 Flash Lite', 'value': 'gemini/gemini-2.5-flash-lite'},
+                                                                                      {'label': 'Anthropic Claude Haiku 4.5', 'value': 'anthropic/claude-haiku-4-5'},
+                                                                                      {'label': 'Mistral Small 2506', 'value': 'mistral/mistral-small-2506'},
+                                                                                      {'label': 'ZAI GLM 4.5', 'value': 'zai/glm-4.5'},
+                                                                                  ],
+                                                                                  value='openai/gpt-4o-mini',
+                                                                                  clearable=False,
+                                                                                  searchable=False,
+                                                                                  style={'width': '420px'}
+                                                                              ),
+                                                                          ],
+                                                                          style={'margin-top': '1%', 'margin-bottom': '1%'}
+                                                                      ),
 
                                                                       html.Div(style={'display': 'inline-block'},
-                                                                                   
+                                                                                    
                                                                                # define text area for question input
                                                                                children=[html.Div([ChatComponent(id="chat-component",
                                                                                                                  messages=[])])])])],                                               
@@ -80,4 +112,4 @@ exec(open(r'callbacks.py').read())
 
 # host dashboard locally
 if __name__ == '__main__':
-    app.run(debug=False)
+    app.run(debug=True)

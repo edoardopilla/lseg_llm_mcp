@@ -3,11 +3,12 @@ from contextlib import AsyncExitStack
 from dotenv import load_dotenv
 from mcp import ClientSession, StdioServerParameters
 from mcp.client.stdio import stdio_client
-from openai import AsyncOpenAI, LengthFinishReasonError
 from pydantic import BaseModel, Field
 from typing import Any, Dict, List
 
+import asyncio
 import json
+import litellm
 import os
 import pandas as pd
 
@@ -25,10 +26,9 @@ class LLM_MCP_obj:
     load_dotenv()
 
     def __init__(self,
-                 client=AsyncOpenAI(),
                  exit_stack=AsyncExitStack(),
                  max_compl_tokens=2048,
-                 model='gpt-4o-mini',
+                 model='openai/gpt-4o-mini', # gemini/gemini-2.5-flash-lite _ openai/gpt-4o-mini _ anthropic/claude-haiku-4-5 _ mistral/mistral-small-2506 _ zai/glm-4.5
                  seed=17,
                  session=None,
                  stdio=None,
@@ -40,11 +40,11 @@ class LLM_MCP_obj:
         Constructor
 
         Args:
-            client: Default client to instantiate.
             exit_stack: Default exit stack for async client.
             max_compl_tokens: Default number of tokens serving as upper bound for completions.
-            model: Default model to instantiate.
-            seed: Default seed for chat completions.
+            model: Default model identifier (e.g., 'gpt-4o-mini', 'openai/gpt-4o-mini', 'claude-3-sonnet-20240229', etc.). 
+                   Can be either a provider/model format or just the model name for OpenAI.
+            seed: Default seed for chat completions (may not be supported by all providers).
             session: Default session to instantiate.
             stdio: Default read stream for client session.
             system_message: Default system message passed to chat.
@@ -53,7 +53,6 @@ class LLM_MCP_obj:
             write: Default write stream for client session.
         """
 
-        self.client=client
         self.exit_stack=exit_stack
         self.max_compl_tokens=max_compl_tokens
         self.model=model
@@ -64,6 +63,38 @@ class LLM_MCP_obj:
         self.temper=temper
         self.top_p=top_p
         self.write=write
+
+    async def _acompletion_with_retry(self, **kwargs):
+        """
+        Execute litellm.acompletion() with exponential backoff retry logic.
+        Retries up to 3 times with exponential backoff for 503 errors.
+        
+        Args:
+            **kwargs: Arguments to pass to litellm.acompletion()
+        
+        Returns:
+            Response from litellm.acompletion()
+        """
+        max_attempts = 3
+        attempt = 0
+        
+        while attempt < max_attempts:
+            try:
+                attempt += 1
+                return await litellm.acompletion(**kwargs)
+            except Exception as e:
+                error_message = str(e)
+                # Check if it's a 503 error or if we've exhausted retries
+                if attempt >= max_attempts:
+                    raise
+                if '503' in error_message or 'Service Unavailable' in error_message:
+                    # Exponential backoff: 2^attempt seconds (2s, 4s)
+                    wait_time = 2 ** attempt
+                    print(f'Attempt {attempt} failed with 503 error. Retrying in {wait_time} seconds...')
+                    await asyncio.sleep(wait_time)
+                else:
+                    # For non-503 errors, raise immediately
+                    raise
 
     async def connect_to_server(self,
                                 server_script_path: str='server.py'):
@@ -132,17 +163,18 @@ class LLM_MCP_obj:
         # get available tools
         tools = await self.get_mcp_tools()
 
-        # initial openai api call
-        response = await self.client.chat.completions.create(model=self.model,
-                                                             messages=[{'role': 'system',
-                                                                        'content': self.system_message},
-                                                                       {'role': 'user',
-                                                                        'content': query}],
-                                                             seed=self.seed,
-                                                             temperature=self.temper,
-                                                             tools=tools,
-                                                             tool_choice="auto",
-                                                             top_p=self.top_p)
+        # initial litellm api call with exponential backoff retry
+        response = await self._acompletion_with_retry(
+            model=self.model,
+            messages=[{'role': 'system',
+                       'content': self.system_message},
+                      {'role': 'user',
+                       'content': query}],
+            tools=tools,
+            tool_choice="auto",
+            temperature=self.temper,
+            max_tokens=self.max_compl_tokens
+        )
 
         # get assistant response
         assistant_message = response.choices[0].message
@@ -175,7 +207,8 @@ class LLM_MCP_obj:
                          'full_answer': 'full_answer_placeholder',
                          'final_answer': 'final_answer_placeholder',
                          'answer_tkns': None,
-                         'tot_tkns': None}
+                         'tot_tkns': None,
+                         'generator_model': f'{self.model.split('/')[1]}'}
 
         # handle tool calls if present
         if assistant_message.tool_calls:
@@ -192,7 +225,8 @@ class LLM_MCP_obj:
                          'full_answer': 'full_answer_placeholder',
                          'final_answer': 'final_answer_placeholder',
                          'answer_tkns': response.usage.completion_tokens,
-                         'tot_tkns': response.usage.total_tokens}
+                         'tot_tkns': response.usage.total_tokens,
+                         'generator_model': f'{self.model.split('/')[1]}'}
 
                 # execute tool call
                 result = await self.session.call_tool(tool_call.function.name,
@@ -212,14 +246,37 @@ class LLM_MCP_obj:
                                  'content': result.content[0].text})
             
             try:
-                # get final response from OpenAI with tool results as context
-                final_response = await self.client.chat.completions.parse(model=self.model,
-                                                                        messages=messages,
-                                                                        max_completion_tokens=self.max_compl_tokens,
-                                                                        seed=self.seed,
-                                                                        temperature=self.temper,
-                                                                        top_p=self.top_p,
-                                                                        response_format=AnswerFormat)
+                # get final response from litellm with tool results as context
+                # Using response_format with JSON schema for structured output
+                # Using exponential backoff retry for 503 errors
+                final_response = await self._acompletion_with_retry(
+                    model=self.model,
+                    messages=messages,
+                    max_tokens=self.max_compl_tokens,
+                    temperature=self.temper,
+                    response_format={
+                        "type": "json_schema",
+                        "json_schema": {
+                            "name": "AnswerFormat",
+                            "strict": True,
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "full_answer": {
+                                        "type": "string",
+                                        "description": "The full answer to output, inclusive of descriptions for the user to understand how to final answer was reached."
+                                    },
+                                    "final_answer": {
+                                        "type": "string",
+                                        "description": "The final figure or fact that ultimately responds to the original user question."
+                                    }
+                                },
+                                "required": ["full_answer", "final_answer"],
+                                "additionalProperties": False
+                            }
+                        }
+                    }
+                )
             
                 for i in range(len(tool_hist_dct_lst)):
                     tool_hist_dct_lst[i].update({'question_tkns': response.usage.prompt_tokens + final_response.usage.prompt_tokens,
@@ -242,7 +299,7 @@ class LLM_MCP_obj:
 
                 return {"role": "assistant", "content": json.loads(final_response.choices[0].message.content)['final_answer']}
             
-            except LengthFinishReasonError:
+            except Exception as e:
                 for i in range(len(tool_hist_dct_lst)):
                     tool_hist_dct_lst[i].update({'question_tkns': 0,
                                                 'full_answer': 'Structured output parsing failed',
@@ -260,7 +317,7 @@ class LLM_MCP_obj:
                             f,
                             indent=1)
 
-                print('Structured output parsing failed.')
+                print(f'Structured output parsing failed: {str(e)}')
 
                 return {"role": "assistant", "content": 'Structured output parsing failed.'}
             

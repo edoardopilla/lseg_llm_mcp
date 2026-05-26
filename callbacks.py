@@ -2,17 +2,16 @@
 from LLM_MCP import *
 from dash import Output, Input, State
 
-# initialize llm instance
-LLM_client = LLM_MCP_obj()
-
 # define callback to process user query in conversational flow
 @app.callback(Output("chat-component", "messages"),
               Input("chat-component", "new_message"),
               State("chat-component", "messages"),
+              State("generator-model-dropdown", "value"),
               prevent_initial_call=True)
 
 async def handle_chat(new_message: str,
-                      messages: List[str]) -> List[str]:
+                      messages: List[str],
+                      generator_model: str) -> List[str]:
     """
     Enable conversational flow between user and LLM.
 
@@ -34,6 +33,9 @@ async def handle_chat(new_message: str,
 
     # if the latest message is coming from the user
     if new_message["role"] == "user":
+        # initialize llm instance using user-selected model
+        selected_model = generator_model or "openai/gpt-4o-mini"
+        LLM_client = LLM_MCP_obj(model=selected_model)
 
         # connect to server
         await LLM_client.connect_to_server('server.py')

@@ -13,6 +13,22 @@ import time
 mcp = FastMCP(name='LSEG APIs MCP server',
               host='127.0.0.1') # kept here regardless of deprecated warning to avoid RuntimeError: Attempted to exit cancel scope in a different task than it was entered in
 
+# @mcp.tool()
+# def say_cheese() -> str:
+#     """
+#     Says "cheese!".
+
+#     Args:
+#         None
+
+#     Returns:
+#         None
+#     """
+
+#     cheese = 'Cheese!'
+
+#     return cheese
+
 @mcp.tool()
 def get_acquisitions(comp_name: str,
                      end_date: str = f'{(pd.to_datetime('now') + pd.offsets.YearEnd()).strftime('%Y-%m-%d')}',

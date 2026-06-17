@@ -1,17 +1,509 @@
-/* assets/style.css */
-
-body {
-    background-color: #FFFFFF;
-    font-family: "Arial";
-    margin-top: 2%;
-    margin-right: 5%;
-    margin-left: 5%
+/* ===== Color Palette ===== */
+:root {
+    --dark-bg: #1a1a2e;
+    --darker-bg: #0f0f1e;
+    --card-bg: #252541;
+    --text-light: #e0e0e0;
+    --text-muted: #a8a8b8;
+    --accent-blue: #0D45B6;
+    --hover-blue: #1356d4;
+    --border-color: #3a3a52;
+    --success-color: #10b981;
+    --error-color: #ef4444;
+    --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.3);
+    --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.4);
+    --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.5);
 }
 
+/* ===== Global Styles ===== */
+* {
+    box-sizing: border-box;
+}
+
+html, body {
+    margin: 0;
+    padding: 0;
+    height: 100%;
+    width: 100%;
+}
+
+body {
+    background: linear-gradient(135deg, var(--darker-bg) 0%, var(--dark-bg) 100%);
+    color: var(--text-light);
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+        'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+        sans-serif;
+    font-size: 14px;
+    line-height: 1.6;
+    min-height: 100vh;
+    padding: 0;
+}
+
+/* ===== Main Container ===== */
+.main-container {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 20px 30px;
+    min-height: 100vh;
+}
+
+/* ===== Header Styles ===== */
+.header-container {
+    background: linear-gradient(135deg, var(--card-bg) 0%, rgba(13, 69, 182, 0.05) 100%);
+    padding: 25px 30px;
+    border-radius: 12px;
+    margin-bottom: 30px;
+    border: 1px solid var(--border-color);
+    box-shadow: var(--shadow-md);
+}
+
+.header-content {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+}
+
+.header-logo {
+    height: 60px;
+    width: auto;
+    filter: drop-shadow(0 2px 8px rgba(13, 69, 182, 0.2));
+    transition: transform 0.3s ease;
+}
+
+.header-logo:hover {
+    transform: scale(1.05);
+}
+
+.header-title {
+    color: var(--text-light);
+    font-size: 26px;
+    font-weight: 700;
+    margin: 0;
+    background: linear-gradient(135deg, var(--text-light) 0%, var(--accent-blue) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+/* ===== Disclaimer ===== */
 .sources-disclaimer {
-    color: #003299;
+    color: var(--text-muted);
     font-size: 12px;
-    margin-top: 1%;
-    margin-bottom: 1%;
-    text-align: left
+    margin-top: 12px;
+    margin-bottom: 12px;
+    text-align: left;
+    padding: 8px 0;
+    opacity: 0.85;
+}
+
+/* ===== Tabs Styles ===== */
+.custom-tabs-parent {
+    margin-top: 30px;
+}
+
+.custom-tabs {
+    background-color: transparent !important;
+}
+
+.custom-tabs .react-tabs__tab-list {
+    border-bottom: 2px solid var(--border-color);
+    padding: 0;
+    margin-bottom: 30px;
+}
+
+.custom-tabs .react-tabs__tab {
+    color: var(--text-muted);
+    background-color: transparent !important;
+    border: none !important;
+    padding: 12px 20px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-weight: 500;
+    border-bottom: 3px solid transparent;
+    margin-bottom: -2px;
+}
+
+.custom-tabs .react-tabs__tab:hover {
+    color: var(--text-light);
+}
+
+.custom-tabs .react-tabs__tab--selected {
+    color: var(--accent-blue);
+    border-bottom: 3px solid var(--accent-blue) !important;
+    font-weight: 700;
+}
+
+/* ===== Tab Content ===== */
+.tab-content {
+    animation: fadeIn 0.3s ease;
+}
+
+.tab-title-section {
+    margin-bottom: 30px;
+}
+
+.tab-title-section > div {
+    color: var(--accent-blue);
+    font-size: 24px;
+    font-weight: 700;
+    text-align: left;
+}
+
+/* ===== Form Styles ===== */
+.form-section {
+    margin-bottom: 30px;
+}
+
+.form-group {
+    margin-bottom: 20px;
+}
+
+.form-label {
+    display: block;
+    color: var(--text-light);
+    font-weight: 600;
+    margin-bottom: 10px;
+    font-size: 14px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.model-dropdown {
+    width: 100%;
+    max-width: 420px;
+    color: var(--text-muted) !important;
+}
+
+/* ===== Dropdown Styles (Dash Dropdown) ===== */
+.Select-control {
+    background-color: var(--card-bg) !important;
+    border: 1px solid var(--border-color) !important;
+    border-radius: 8px !important;
+    color: var(--text-light) !important;
+    box-shadow: var(--shadow-sm) !important;
+    transition: all 0.3s ease !important;
+}
+
+.Select-control:hover {
+    border-color: var(--accent-blue) !important;
+    box-shadow: 0 0 0 3px rgba(13, 69, 182, 0.1), var(--shadow-md) !important;
+}
+
+.Select-control.is-focused {
+    border-color: var(--accent-blue) !important;
+    box-shadow: 0 0 0 3px rgba(13, 69, 182, 0.2), var(--shadow-md) !important;
+}
+
+.Select-arrow-zone {
+    color: var(--text-muted) !important;
+}
+
+.Select-menu-outer {
+    background-color: var(--card-bg) !important;
+    border: 1px solid var(--border-color) !important;
+    border-top: none !important;
+    box-shadow: var(--shadow-lg) !important;
+    z-index: 1000 !important;
+}
+
+.Select-option {
+    color: var(--text-light) !important;
+    background-color: transparent !important;
+    padding: 12px 15px !important;
+    transition: all 0.2s ease !important;
+}
+
+.Select-option:hover {
+    background-color: rgba(13, 69, 182, 0.15) !important;
+    color: var(--accent-blue) !important;
+}
+
+.Select-option.is-focused {
+    background-color: rgba(13, 69, 182, 0.15) !important;
+    color: var(--accent-blue) !important;
+}
+
+.Select-option.is-selected {
+    background-color: rgba(13, 69, 182, 0.25) !important;
+    color: var(--accent-blue) !important;
+    font-weight: 600 !important;
+}
+
+.Select-input > input {
+    color: var(--text-light) !important;
+    background-color: transparent !important;
+}
+
+.Select-placeholder {
+    color: var(--text-muted) !important;
+}
+
+.Select-value {
+    color: var(--text-light) !important;
+}
+
+.Select-value-label {
+    color: var(--text-light) !important;
+}
+
+.Select-value-label,
+.Select-value > div {
+    color: var(--text-light) !important;
+}
+
+/* ===== Chat Component Styles ===== */
+.chat-section {
+    margin-top: 30px;
+    animation: slideUp 0.4s ease;
+}
+
+.chat-section > div {
+    background-color: var(--card-bg);
+    border-radius: 12px;
+    border: 1px solid var(--border-color);
+    padding: 20px;
+    box-shadow: var(--shadow-md);
+}
+
+/* Dash Chat Component styling */
+.dash-chatbot {
+    background-color: var(--card-bg) !important;
+    border-radius: 12px !important;
+    border: 1px solid var(--border-color) !important;
+    overflow: hidden;
+}
+
+.dash-chatbot .chat-messages {
+    background-color: var(--darker-bg) !important;
+    padding: 15px !important;
+    max-height: 600px;
+    overflow-y: auto;
+}
+
+.dash-chatbot .message {
+    margin: 10px 0;
+    padding: 12px 15px;
+    border-radius: 8px;
+    word-wrap: break-word;
+}
+
+.dash-chatbot .message.user {
+    background-color: var(--accent-blue);
+    color: white;
+    margin-left: 20px;
+    border-bottom-right-radius: 2px;
+}
+
+.dash-chatbot .message.bot {
+    background-color: var(--border-color);
+    color: var(--text-light);
+    margin-right: 20px;
+    border-bottom-left-radius: 2px;
+}
+
+.dash-chatbot .chat-input {
+    background-color: var(--card-bg) !important;
+    border-top: 1px solid var(--border-color) !important;
+    padding: 15px !important;
+    display: flex;
+    gap: 10px;
+}
+
+.dash-chatbot input[type="text"] {
+    background-color: var(--darker-bg) !important;
+    border: 1px solid var(--border-color) !important;
+    color: var(--text-light) !important;
+    border-radius: 8px;
+    padding: 12px 15px !important;
+    flex: 1;
+    transition: all 0.3s ease;
+}
+
+.dash-chatbot input[type="text"]:focus {
+    border-color: var(--accent-blue) !important;
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(13, 69, 182, 0.1);
+}
+
+.dash-chatbot input[type="text"]::placeholder {
+    color: var(--text-muted);
+}
+
+.dash-chatbot button {
+    background-color: var(--accent-blue) !important;
+    color: white !important;
+    border: none !important;
+    border-radius: 8px;
+    padding: 10px 20px !important;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-weight: 600;
+    text-transform: uppercase;
+    font-size: 12px;
+}
+
+.dash-chatbot button:hover {
+    background-color: var(--hover-blue) !important;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(13, 69, 182, 0.3);
+}
+
+.dash-chatbot button:active {
+    transform: translateY(0);
+}
+
+/* ===== Scrollbar Styles ===== */
+::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: var(--dark-bg);
+}
+
+::-webkit-scrollbar-thumb {
+    background: var(--border-color);
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: var(--accent-blue);
+}
+
+/* ===== Animations ===== */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+@keyframes slideUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* ===== Responsive Design ===== */
+@media (max-width: 768px) {
+    .main-container {
+        padding: 15px;
+    }
+
+    .header-container {
+        padding: 15px 20px;
+    }
+
+    .header-content {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 15px;
+    }
+
+    .header-title {
+        font-size: 20px;
+    }
+
+    .header-logo {
+        height: 50px;
+    }
+
+    .custom-tabs .react-tabs__tab {
+        padding: 10px 15px;
+        font-size: 13px;
+    }
+
+    .tab-title-section > div {
+        font-size: 20px;
+    }
+
+    .form-label {
+        font-size: 12px;
+    }
+
+    .model-dropdown {
+        max-width: 100%;
+    }
+
+    .chat-section > div {
+        padding: 15px;
+    }
+
+    .dash-chatbot .message.user {
+        margin-left: 10px;
+    }
+
+    .dash-chatbot .message.bot {
+        margin-right: 10px;
+    }
+}
+
+@media (max-width: 480px) {
+    .main-container {
+        padding: 10px;
+    }
+
+    .header-container {
+        padding: 10px 15px;
+    }
+
+    .header-logo {
+        height: 45px;
+    }
+
+    .header-title {
+        font-size: 16px;
+    }
+
+    .tab-title-section > div {
+        font-size: 18px;
+    }
+
+    .custom-tabs .react-tabs__tab {
+        padding: 8px 10px;
+        font-size: 12px;
+    }
+
+    .chat-section > div {
+        padding: 12px;
+    }
+
+    .dash-chatbot .message {
+        padding: 10px 12px;
+        font-size: 13px;
+    }
+
+    .dash-chatbot button {
+        padding: 8px 12px !important;
+        font-size: 10px;
+    }
+}
+
+/* ===== Accessibility ===== */
+@media (prefers-reduced-motion: reduce) {
+    * {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: more) {
+    :root {
+        --text-muted: #b8b8c8;
+        --border-color: #4a4a62;
+    }
+
+    .Select-control {
+        border-width: 2px;
+    }
 }

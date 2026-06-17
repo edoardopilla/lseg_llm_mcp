@@ -28,7 +28,7 @@ class LLM_MCP_obj:
     def __init__(self,
                  exit_stack=AsyncExitStack(),
                  max_compl_tokens=2048,
-                 model='openai/gpt-4o-mini', # gemini/gemini-2.5-flash-lite _ openai/gpt-4o-mini _ anthropic/claude-haiku-4-5 _ mistral/mistral-small-2506 _ zai/glm-4.5
+                 model='mistral/mistral-small-2506', # gemini/gemini-2.5-flash-lite _ openai/gpt-4o-mini _ anthropic/claude-haiku-4-5 _ mistral/mistral-small-2506
                  seed=17,
                  session=None,
                  stdio=None,

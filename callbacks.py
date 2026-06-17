@@ -34,7 +34,7 @@ async def handle_chat(new_message: str,
     # if the latest message is coming from the user
     if new_message["role"] == "user":
         # initialize llm instance using user-selected model
-        selected_model = generator_model or "openai/gpt-4o-mini"
+        selected_model = generator_model or "mistral/mistral-small-2506"
         LLM_client = LLM_MCP_obj(model=selected_model)
 
         # connect to server

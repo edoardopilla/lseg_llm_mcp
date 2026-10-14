@@ -14,4 +14,4 @@ wheels/
 
 # Custom-generated files
 knowledge_base/
-tool_call_hist.json
+system_database.db

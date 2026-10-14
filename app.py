@@ -22,7 +22,7 @@ header_logo = 'assets/resized.png'
 app = Dash(__name__)
 
 # specify dashboard title
-app.title = 'Bypassing Document Ingestion - Custom LSEG MCP server'
+app.title = 'Bypassing Document Ingestion - Custom MCP servers'
 
 # specify style for inactive tabs
 tab_style = {'color': colormap['text-muted'],
@@ -59,7 +59,7 @@ app.layout = html.Div([
                               html.Img(src=header_logo,
                                       className='header-logo',
                                       style={'height': '60px', 'width': 'auto'}),
-                              html.H3(children='Bypassing Document Ingestion - Custom LSEG MCP Server',
+                              html.H3(children='Bypassing Document Ingestion - Custom MCP Servers',
                                      className='header-title',
                                      style={'color': colormap['text-light'],
                                             'font-size': '24px',
@@ -91,7 +91,7 @@ app.layout = html.Div([
                              # Tab title
                              html.Div(className='tab-title-section',
                                      children=[
-                                         html.Div(children='Interact with LSEG data',
+                                         html.Div(children='Interact with selected MCP data',
                                                  style={'color': colormap['accent-blue'],
                                                         'font-size': '24px',
                                                         'font-weight': 'bold',
@@ -114,22 +114,51 @@ app.layout = html.Div([
                                                              'display': 'block'
                                                          }
                                                      ),
+                                                      dcc.Dropdown(
+                                                          id='generator-model-dropdown',
+                                                          options=[
+                                                              {'label': 'OpenAI GPT-4o mini', 'value': 'openai/gpt-4o-mini'},
+                                                              {'label': 'Gemini 3.1 Flash Lite', 'value': 'gemini/gemini-3.1-flash-lite'},
+                                                              {'label': 'Anthropic Claude Haiku 4.5', 'value': 'anthropic/claude-haiku-4-5'},
+                                                              {'label': 'Mistral Small 2506', 'value': 'mistral/mistral-small-2506'},
+                                                              {'label': 'DeepSeek V4 Flash', 'value': 'deepseek/deepseek-v4-flash'},
+                                                          ],
+                                                          value='mistral/mistral-small-2506',
+                                                          clearable=False,
+                                                          searchable=False,
+                                                          className='model-dropdown',
+                                                          style={'width': '100%', 'maxWidth': '420px'}
+                                                      ),
+                                                  ]),
+                                         html.Div(className='form-group',
+                                                 children=[
+                                                     html.Label(
+                                                         'MCP Server Access',
+                                                         className='form-label',
+                                                         style={
+                                                             'color': colormap['text-light'],
+                                                             'font-weight': 'bold',
+                                                             'margin-bottom': '8px',
+                                                             'margin-top': '12px',
+                                                             'display': 'block'
+                                                         }
+                                                     ),
                                                      dcc.Dropdown(
-                                                         id='generator-model-dropdown',
+                                                         id='mcp-server-dropdown',
                                                          options=[
-                                                             {'label': 'OpenAI GPT-4o mini', 'value': 'openai/gpt-4o-mini'},
-                                                             {'label': 'Gemini 2.5 Flash Lite', 'value': 'gemini/gemini-2.5-flash-lite'},
-                                                             {'label': 'Anthropic Claude Haiku 4.5', 'value': 'anthropic/claude-haiku-4-5'},
-                                                             {'label': 'Mistral Small 2506', 'value': 'mistral/mistral-small-2506'},
+                                                             {'label': 'LSEG MCP', 'value': 'lseg'},
+                                                             {'label': 'SEC EDGAR MCP', 'value': 'edgar'},
+                                                             {'label': 'RAG 10-K Baseline MCP', 'value': 'rag'},
+                                                             {'label': 'No MCP Server (No Tools)', 'value': 'none'},
                                                          ],
-                                                         value='mistral/mistral-small-2506',
+                                                         value='lseg',
                                                          clearable=False,
                                                          searchable=False,
                                                          className='model-dropdown',
                                                          style={'width': '100%', 'maxWidth': '420px'}
                                                      ),
                                                  ])
-                                     ]),
+                                      ]),
                              
                              # Chat component section
                              html.Div(className='chat-section',
